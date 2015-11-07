@@ -1,0 +1,32 @@
+// File name: projects/09/Snake/Main.jack
+
+/**
+ * The Main class initializes a new Snake Game and starts it.
+ */
+class Main 
+{
+    /** Initializes a new game and starts it. */    
+    function void main() 
+    {
+        var int number;
+        var Snake game;
+        //let game = Snake.new ();
+        let number = 1;
+        //Before every game, clear the screen and move the cursor to 
+        //the top
+        while(number=1)
+        {
+            do Screen.clearScreen();
+            do Output.moveCursor(1,1);
+            let game = Snake.new ();
+            do game.run();
+            do Output.println();
+            //do Output.println();
+            do Output.printString("Want to try again??");
+            do Output.println();
+            let number = Keyboard.readInt("Print 1(yes) or 0(no) :");
+        }
+		do game.dispose();
+        return;
+    }
+}

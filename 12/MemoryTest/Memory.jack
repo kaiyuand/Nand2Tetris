@@ -1,0 +1,95 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Memory.jack
+
+/**
+ * Memory operations library.
+ */ 
+class Memory {
+
+    //The free list
+    static Array freeLists;
+
+    //The index of the current list
+    static int LENGTH;
+
+    //The index of the next block(list) 
+    static int NEXT;
+
+    /** Initializes memory parameters. */
+    function void init() 
+    {
+	let LENGTH = 0;
+      	let NEXT = 1;
+
+	//The base address of the freelist
+      	let freeLists = 2048;
+
+	//The first element of in the free list is the size of the list
+      	let freeLists[LENGTH] = 14335;              //16383-2048
+      	let freeLists[NEXT] = null;
+      	return;
+    }
+
+    /** Returns the value of the main memory at the given address. */
+    function int peek(int address) 
+    {
+	var Array memory;
+      	let memory = address;
+      	return memory[0];
+    }
+
+    /** Sets the value of the main memory at this address
+     *  to the given value. */
+    function void poke(int address, int value) 
+    {
+	var Array memory;
+      	let memory = address;
+      	let memory[0] = value;
+      	return;
+    }
+
+    /** finds and allocates from the heap a memory block of the 
+     *  specified size and returns a reference to its base address. */
+    function int alloc(int size)
+    {
+	var Array newL, oldL, nextL;
+      	let newL = freeLists;
+      	let oldL = 0;
+      	while (newL[LENGTH] < size) 
+	{
+            let oldL = newL;
+            let newL = newL[NEXT];
+            if (newL = null) 
+	    {
+          	return -1;
+            }
+      	}
+	let nextL = newL + 2 + size;
+      	let nextL[LENGTH] = newL[LENGTH] - size - 2;
+      	let nextL[NEXT] = newL[NEXT];
+      	let newL[LENGTH] = size;
+      	let newL[NEXT] = null;
+
+      	if (oldL = 0) 
+	{
+            let freeLists = nextL;
+      	} 
+	else 
+	{
+            let oldL[NEXT] = nextL;
+      	}
+	return newL + 2;
+    }
+
+    /** De-allocates the given object and frees its space. */
+    function void deAlloc(int object) 
+    {
+	var Array list;
+      	let list = object - 2;
+      	let list[NEXT] = freeLists;
+      	let freeLists = list;
+      	return;
+    }    
+}

@@ -1,0 +1,285 @@
+// File name: projects/09/Snake/Snake.jack
+
+/**
+ * Implements the Snake eatting Beans game.
+ * In this game you can move a snake around the screen ,but can not
+ * touch the boundaries. 
+ * In the beginning, You can choose the difficult level of the game,
+ * the level is based on the  moving speed of the snake. 
+ * After eatting the Beans, the snake will get smaller(longer is 
+ * difficult to implement)
+ * You will lose if the snake touch the boundaries.
+ * You will win if the snake have eatten enough Beans.
+ */
+
+
+class Snake
+{
+	field Beans curBean;
+	field Array beansnum;
+	field SnakeMoving snakeMoving;
+	field int Score;
+	field int speed;
+	// The square's movement direction
+	// 0=none,1=up,2=down,3=left,4=right
+	field int direction; 
+	
+	constructor Snake new() 
+	{
+		do levelchoose();
+		let Score = 0;
+		let snakeMoving = SnakeMoving.new(200,100,40);
+		let beansnum = Array.new(10);
+		do initializebeans();
+		let curBean = beansnum[Score];
+		do curBean.draw();
+		return this;
+	}
+
+	//First to choose the level of the game
+	method void levelchoose()
+	{
+		var int level ;
+		var String input;
+		do Output.printString("Choose your game level(From 1(Easiest) to 10(Hardest))");
+		do Output.println();
+		do Output.printString("The level determines the initial speed of your snake.");
+		do Output.println();
+		let input = Keyboard.readLine("Enter difficulty level now :");
+		let level = String.intValue(input);
+		let speed = level;
+		do Screen.clearScreen();
+		return;
+	}
+
+	method void initializebeans() 
+	{
+		//I dont know if there is a random function in Jack
+		//So I get these coordinates of beans randomly in a c program
+		let beansnum[0] = Beans.new(124,43);
+		let beansnum[1] = Beans.new(283,239);
+		let beansnum[2] = Beans.new(26,132);
+		let beansnum[3] = Beans.new(190,236);
+		let beansnum[4] = Beans.new(292,123);
+		let beansnum[5] = Beans.new(217,199);
+		let beansnum[6] = Beans.new(120,100);
+		let beansnum[7] = Beans.new(262,15);
+		let beansnum[8] = Beans.new(352,221);
+		let beansnum[9] = Beans.new(100,209);
+		return;	
+	}
+
+	method void dispose() 
+	{
+        do snakeMoving.dispose();
+		do beansnum.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+	/** Moves the square by 1 pixel in the current direction. */
+    method void Snakemove() 
+	{
+        if (direction = 1) 
+        {
+            do snakeMoving.moveUp();
+        }
+        if (direction = 2) 
+        {
+            do snakeMoving.moveDown();
+        }
+        if (direction = 3) 
+        {
+            do snakeMoving.moveLeft();
+        }
+        if (direction = 4) 
+        {
+            do snakeMoving.moveRight();
+        }
+
+		// The level determines the delay times
+        do Sys.wait(11-speed); 
+        return;
+    }
+
+    //  Judge the snake if have eatten the beans
+    //  The  judging condition differs with the direction of the snake 
+    //   movement.
+	method boolean Judgeeatbeans (int direction) 
+	{
+		var int size;
+		var int base,top,left,right;
+		//get the coordinate of the current beans
+		let base = curBean.getY();
+		let top = curBean.getY() + curBean.getSize();
+		let left = curBean.getX();
+		let right = curBean.getX() + curBean.getSize();
+		if( (direction=1) & (snakeMoving.getY() = top))
+		{
+			let size=snakeMoving.getSize();
+			if(((snakeMoving.getX()<left)|(snakeMoving.getX()=left))&(((snakeMoving.getX()+size)>right)|((snakeMoving.getX()+size)=right)))
+			{
+				return true;
+			}
+		}
+		if( (direction=2) & ((snakeMoving.getY() + snakeMoving.getSize())=base)) 
+		{
+			let size=snakeMoving.getSize();
+			if(((snakeMoving.getX()<left)|(snakeMoving.getX()=left))&(((snakeMoving.getX()+size)>right)|((snakeMoving.getX()+size)=right)))
+			{
+				return true;
+			}
+		}
+		if( (direction=3) & ((snakeMoving.getX())=left)) 
+		{
+			let size=snakeMoving.getSize();
+			if(((snakeMoving.getY()<base)|(snakeMoving.getY()=base))&(((snakeMoving.getY()+size)>top)|((snakeMoving.getY()+size)=top)))
+			{
+				return true;
+			}
+		}
+		if( (direction=4) & ((snakeMoving.getX() + snakeMoving.getSize())=right)) 
+		{
+			let size=snakeMoving.getSize();
+			if(((snakeMoving.getY()<base)|(snakeMoving.getY()=base))&(((snakeMoving.getY()+size)>top)|((snakeMoving.getY()+size)=top)))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	//method to judge whether the snake touch the boundaries
+	method boolean Judgetouchwall() 
+	{
+		if( (snakeMoving.getY() = 1) | ((snakeMoving.getY() + snakeMoving.getSize())= 255)|(snakeMoving.getX() = 1)|((snakeMoving.getX() + snakeMoving.getSize())= 511))
+		{	
+			return true; 
+		}
+		return false;
+	}
+
+
+	/** Starts the game. Handles inputs from the user that controls
+    *  the snake movement. */
+
+    method void run() 
+    {
+        var char key;
+        var boolean exit;
+        var int again;
+        let again = 1;
+        let exit = false;
+
+        while (~exit) 
+        {
+            // waits for a key to be pressed.	
+            while (key = 0) 
+            {
+            	//snake move and draw the current beans
+                let key = Keyboard.keyPressed();
+                do Snakemove();
+				do curBean.draw();
+
+				//judge whether touch the wall
+				if(Judgetouchwall())
+				{
+					do Screen.clearScreen();
+					do Output.printString("Your Score is: ");
+					do Output.printInt(Score);
+					do Output.println();
+					do Output.printString("Keep trying!");
+					return;
+				}
+
+				//judge whether eat the beans
+				if( Judgeeatbeans(direction) ) 
+				{
+					do curBean.erase();
+					do curBean.dispose();
+					do snakeMoving.Smaller();
+					let Score = Score + 1;
+					if(Score = 10)
+					{
+						do Screen.clearScreen();
+						do Output.printString("Great!! Full Marks!");
+						do Output.println();
+						do Output.printString("You can try higher level!");
+						return;
+					}
+
+					//draw the next beans
+					let curBean = beansnum[Score];
+					do curBean.draw();
+				}
+            }
+            //press 'q' ,quit the game
+            if (key = 81) 
+            {
+                let exit = true;
+            }
+            //'move up'
+            if (key = 131) 
+            {
+                let direction = 1;
+            }
+            //'move down'
+            if (key = 133) 
+            {
+                let direction = 2;
+            }
+            //'<-'
+            if (key = 130) 
+            {
+                let direction = 3;
+            }
+            //'->'
+            if (key = 132) 
+            {
+                let direction = 4;
+            }
+            
+            // waits for the key to be released.
+            while (~(key = 0)) 
+            {
+            	//snake move and draw the current beans
+                let key = Keyboard.keyPressed();
+                do Snakemove();
+				do curBean.draw();
+
+				//judge whether touch the wall
+				if(Judgetouchwall())
+				{
+					do Screen.clearScreen();
+					do Output.printString("Your Score is: ");
+					do Output.printInt(Score);
+					do Output.println();
+					do Output.printString("Keep trying!");
+					return;
+				}
+
+				//judge whether eat the beans
+				if( Judgeeatbeans(direction) ) 
+				{
+					do curBean.erase();
+					do curBean.dispose();
+					do snakeMoving.Smaller();
+					let Score = Score + 1;
+					if(Score = 10)
+					{
+						do Screen.clearScreen();
+						do Output.printString("Great!! Full Marks!");
+						do Output.println();
+						do Output.printString("You can try higher level!");
+						return;
+					}
+					//draw the next beans
+					let curBean = beansnum[Score];
+					do curBean.draw();
+				}
+            }
+        }  
+        return;
+	}
+	
+}

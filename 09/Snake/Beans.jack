@@ -1,0 +1,59 @@
+// File name: projects/09/Snake/Beans.jack
+
+/**
+ * Implements a square(the Beans that Snake need to eat). 
+ * A Beans has a screen location
+ * and a fixed size. It also has methods for drawing, erasing.
+ * After several test, we assuming the size is 6.
+ */
+class Beans 
+{
+	field int SIZE;
+	field int x, y;
+	
+	constructor Beans new(int Ax, int Ay) 
+	{
+		let x = Ax;
+		let y = Ay;
+		let SIZE = 6;
+		return this;
+	}
+	
+	/** Deallocates the object's memory. */
+    method void dispose() 
+    {
+        do Memory.deAlloc(this);
+        return;
+    }
+	
+	//Draw the bean rectangle(assuming the bean size = 6)
+	method void draw() 
+	{
+		do Screen.setColor(true);
+		do Screen.drawRectangle(x, y, x+SIZE, y+SIZE);
+		return;
+	}
+	
+    method int getX() 
+    {
+        return x;
+    }
+
+    method int getY() 
+    {
+        return y;
+    }
+
+	method int getSize()
+	{
+		return SIZE;
+	}
+
+	// Erases the bean rectangle after the snake has eatten it
+    method void erase() 
+    {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x, y, x + SIZE, y + SIZE);
+        return;
+    }
+}
